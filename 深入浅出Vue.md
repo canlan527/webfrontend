@@ -1221,13 +1221,122 @@ inheritAttrs:false,
   </div>
 ```
 
-$listeners可以获取所有通过v-on绑定的属性
+- $listeners可以获取所有通过v-on绑定的属性
 
+```html
+<div id="app">
+    <my-cmp @click="func"></my-cmp>
+  </div>
+  <script>
+    const vm = new Vue({
+      el:'#app',
+      methods:{
+        func(){
+          console.log('func')
+        }
+      },
+      components:{
+        myCmp:{
+          props:['func'],
+          data(){
+            return {
+              msg:'hello world'
+            }
+          },
+          methods:{
+            handleClick(){
+              // console.log(this.$listeners)
+              this.$listeners.click()
+            }, 
+          },
+          template:`<div>i am a cmp
+                      <button @click="handleClick">点击</button>
+                    </div>`
+        }
+      }
+    })
+  </script>
+```
 
+- 通过`$emit`主动触发子组件的方法
 
+```js
+methods:{
+    handleClick(){
+        this.$emit('click',this.msg)//要触发的事件，事件要传入的参数
+    }, 
+},
+```
 
+- 通过`$listeners` 触发所有通过v-on绑定在元素身上的方法，这样就不能传参了。
 
+```html
+ <div id="app">
+    <my-cmp @click="func" @mousedown="down"></my-cmp>
+  </div>
+```
 
+```js
+ template:`<div>
+            <button v-on="$listeners">点击</button>
+           </div>`
+```
+
+此时会触发子组件的`click`和`mousedown`事件。
+
+> `$emit`和 `$linsteners `都可以触发/监听系统事件和自定义事件。
+
+### 兄弟组件通信
+
+通过事件总线 event bus
+
+事件总线思路：子组件1通过触发vue实例上的事件，传递对应参数，子组件2通过监听这个事件，接收这个数据。
+
+```html
+ <div id="app">
+    <my-input></my-input>
+    <hr>
+    <my-content></my-content>
+  </div>
+  <script>
+      Vue.prototype.bus=new Vue(); //定义bus
+
+      const vm = new Vue({
+        el:'#app',
+        components:{
+          myContent:{
+            data(){
+              return {
+                content:''
+              }
+            },
+            created() {
+              this.bus.$on('click',content=>{ //2.子组件2订阅发布的函数
+                this.content = content 
+              })
+            },
+            template: `<div>{{content}}</div>`,
+          },
+          myInput:{
+            data(){
+              return {
+                inputVal: ""
+              }
+            },
+            methods: {
+              handleClick(){
+                this.bus.$emit('click',this.inputVal)//1.子组件1发布一个事件函数
+              }
+            },
+            template:`<div>
+                        <input type="text" v-model.lazy="inputVal">
+                        <button @click="handleClick" >提交</button>
+                      </div>`
+          }
+        }
+      })
+  </script>
+```
 
 
 
