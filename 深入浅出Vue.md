@@ -1213,6 +1213,16 @@ inheritAttrs:false,
 
 那如果不通过绑定属性的方式呢？
 
+组件可以通过使用修饰符`.native`来获取原生对象。
+
+```html
+ <div id="app">
+    <my-cmp @click="func"></my-cmp> 
+  </div>
+```
+
+$listeners可以获取所有通过v-on绑定的属性
+
 
 
 
