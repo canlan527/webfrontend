@@ -1338,6 +1338,102 @@ methods:{
   </script>
 ```
 
+## 组件间双向通信
+
+### 单项数据流
+
+我们多个组件共同使用实例里data中的某个数据的时候，涉及到修改的话，可以拷贝到自己组件的data中，不可以直接修改跟实例里data的数据。
+
+```html
+ <div id="app">
+    当前计数： <div>{{count}}</div>
+    <hr>
+    <my-cmp :value="count" @input="handleInput" ></myCmp>
+  </div>
+  <script>
+    Vue.component('my-cmp',{
+      props:['value'],
+      mounted() {
+        setInterval(() => {
+          let value = this.value + 1;
+          this.$emit('input',value)
+        }, 500);
+      },
+      template:`<div>{{value}}</div>`
+    })
+
+    const vm = new Vue({
+      el:'#app',
+      data:{
+        count:100
+      },
+      methods: {
+        handleInput(value){
+          this.count = value
+        }
+      },
+    })
+  </script>
+```
+
+上面的方法可以简化成v-model
+
+```html
+ <div id="app">
+    当前计数： <div>{{count}}</div>
+    <hr>
+    <my-cmp v-modle="count" ></myCmp>
+  </div>
+  <script>
+    
+    Vue.component('my-cmp',{
+     //...
+    })
+    const vm = new Vue({
+      el:'#app',
+      data:{
+        count:100
+      },
+    })
+  </script>
+```
+
+新的指令 
+
+我们知道`:value+@input`可以形成`v-model`语法糖，完成数据双向绑定，
+
+同时，`:xxx + @update:xxx`也可以做数据双向绑定,是`xxx.sync`的语法糖。
+
+```html
+  <div id="app">
+    当前计数：{{count}}
+    <!-- <cmp :value="count" @update="handleInput"></cmp> -->
+    <cmp :value.sync="count"></cmp>
+  </div>
+
+  <script>
+   // :value.sync   'update:value '的语法糖
+    Vue.component('cmp',{
+      props:['value'],
+      mounted() {
+        setInterval(() => {
+          let value = this.value + 1;
+          this.$emit('update:value',value)//触发update:value事件
+        }, 1000);
+      },
+      template:`<div>{{value}}</div>`
+    })
+
+    const vm = new Vue({
+    	//...
+    })
+  </script>
+```
+
+
+
+
+
 
 
 ## 安装V-CLI
